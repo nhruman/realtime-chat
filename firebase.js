@@ -4,17 +4,17 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebas
 
 const firebaseConfig = {
 
-  apiKey: "PASTE_YOUR_API_KEY",
+  apiKey: "AIzaSyDf8QPGWVbqbFtkfjv2xoRdCZueRcJ6Ym0",
 
-  authDomain: "PASTE_YOUR_AUTH_DOMAIN",
+  authDomain: "my-chat-app-9d51c.firebaseapp.com",
 
-  projectId: "PASTE_YOUR_PROJECT_ID",
+  projectId: "my-chat-app-9d51c",
 
-  storageBucket: "PASTE_YOUR_STORAGE_BUCKET",
+  storageBucket: "my-chat-app-9d51c.firebasestorage.app",
 
-  messagingSenderId: "PASTE_YOUR_SENDER_ID",
+  messagingSenderId: "644218222140",
 
-  appId: "PASTE_YOUR_APP_ID"
+  appId: "1:644218222140:web:437905550960a3ab957539"
 
 };
 
