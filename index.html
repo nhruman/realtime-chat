@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Together</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Name entry modal -->
+  <div id="join-screen" class="join-screen">
+    <div class="join-card">
+      <div class="join-badge">Hangout</div>
+      <h1>What's your name?</h1>
+      <p class="join-sub">A private space just for friends — type in any language you like.</p>
+      <input type="text" id="username-input" placeholder="e.g. Rafi" maxlength="20" autocomplete="off">
+      <button id="join-btn">Join chat</button>
+    </div>
+  </div>
+
+  <!-- Main chat screen -->
+  <div class="app-shell" id="app-shell" hidden>
+
+    <header class="chat-header">
+      <div class="header-left">
+        <div class="thread-avatar">🌿</div>
+        <div class="thread-info">
+          <h1>Friends' Chat</h1>
+          <span class="presence"><i class="dot"></i> Everyone's here</span>
+        </div>
+      </div>
+      <button id="whoami-btn" class="whoami-btn" title="Change your name">You: <span id="whoami-name"></span></button>
+    </header>
+
+    <div id="chat-box" class="chat-box"></div>
+
+    <form class="input-area" id="input-area">
+      <input type="text" id="message" placeholder="Type a message in any language..." autocomplete="off">
+      <button type="submit" id="send-btn" aria-label="Send">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M3 11.5L20.5 3.5L14 20.5L11 13L3 11.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      </button>
+    </form>
+
+  </div>
+
+<script type="module" src="firebase.js"></script>
+<script type="module" src="app.js"></script>
+
+</body>
+</html>
