@@ -36,6 +36,10 @@ body {
   background: radial-gradient(circle at 20% 10%, #2a2036 0%, var(--bg-deep) 55%);
   z-index: 20;
 }
+.join-screen[hidden],
+.app-shell[hidden]{
+  display: none !important;
+}
 
 .join-card {
   width: 340px;
