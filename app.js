@@ -24,7 +24,7 @@ const chatBox = document.getElementById('chat-box');
 const inputArea = document.getElementById('input-area');
 const messageInput = document.getElementById('message');
 
-// ---------- Identity (per-device, saved locally) ----------
+// ---------- Identity & Room State ----------
 const STORAGE_KEY = 'chat_username';
 
 function getSavedName() {
@@ -36,19 +36,33 @@ function saveName(name) {
 }
 
 let currentUser = getSavedName();
+let currentRoom = 'general';
+let unsubscribe = null;
 
 function startApp(name) {
   currentUser = name;
-  whoamiName.textContent = name;
-  joinScreen.hidden = true;
-  appShell.hidden = false;
+  whoamiName.textContent = `${name} (#${currentRoom})`;
+  
+  joinScreen.style.display = 'none';
+  appShell.style.display = 'flex';
   messageInput.focus();
+
+  if (unsubscribe) unsubscribe();
+
+  const q = query(collection(db, 'rooms', currentRoom, 'messages'), orderBy('createdAt'));
+  
+  unsubscribe = onSnapshot(q, (snapshot) => {
+    const docs = [];
+    snapshot.forEach((docItem) => docs.push(docItem));
+    renderMessages(docs);
+  });
 }
 
 if (currentUser) {
   startApp(currentUser);
 } else {
-  joinScreen.hidden = false;
+  joinScreen.style.display = 'flex';
+  appShell.style.display = 'none';
 }
 
 joinBtn.addEventListener('click', handleJoin);
@@ -62,6 +76,8 @@ function handleJoin() {
     usernameInput.focus();
     return;
   }
+  const room = window.prompt('Enter Room Code (e.g., 1234):', 'general');
+  currentRoom = room && room.trim() ? room.trim() : 'general';
   saveName(name);
   startApp(name);
 }
@@ -69,6 +85,8 @@ function handleJoin() {
 whoamiBtn.addEventListener('click', () => {
   const newName = window.prompt('What name should we show for you?', currentUser || '');
   if (newName && newName.trim()) {
+    const room = window.prompt('Enter Room Code (e.g., 1234):', currentRoom);
+    currentRoom = room && room.trim() ? room.trim() : currentRoom;
     saveName(newName.trim());
     startApp(newName.trim());
   }
@@ -87,7 +105,7 @@ async function sendMessage() {
   messageInput.value = '';
 
   try {
-    await addDoc(collection(db, 'messages'), {
+    await addDoc(collection(db, 'rooms', currentRoom, 'messages'), {
       text,
       sender: currentUser,
       createdAt: serverTimestamp()
@@ -101,7 +119,7 @@ async function sendMessage() {
 
 window.deleteMessage = async function (id) {
   try {
-    await deleteDoc(doc(db, 'messages', id));
+    await deleteDoc(doc(db, 'rooms', currentRoom, 'messages', id));
   } catch (error) {
     console.error('Delete failed:', error);
   }
@@ -165,12 +183,3 @@ function renderMessages(docs) {
 
   chatBox.scrollTop = chatBox.scrollHeight;
 }
-
-// ---------- Live sync (works for 2, 3, or more friends at once) ----------
-const q = query(collection(db, 'messages'), orderBy('createdAt'));
-
-onSnapshot(q, (snapshot) => {
-  const docs = [];
-  snapshot.forEach((docItem) => docs.push(docItem));
-  renderMessages(docs);
-});
