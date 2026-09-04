@@ -25,30 +25,46 @@ const inputArea = document.getElementById('input-area');
 const messageInput = document.getElementById('message');
 
 // ---------- Identity & Room State ----------
-const STORAGE_KEY = 'chat_username';
+const USER_KEY = 'chat_username';
+const ROOM_KEY = 'chat_roomcode';
 
 function getSavedName() {
-  return localStorage.getItem(STORAGE_KEY);
+  return localStorage.getItem(USER_KEY);
 }
 
 function saveName(name) {
-  localStorage.setItem(STORAGE_KEY, name);
+  localStorage.setItem(USER_KEY, name);
+}
+
+function getSavedRoom() {
+  return localStorage.getItem(ROOM_KEY) || 'general';
+}
+
+function saveRoom(room) {
+  localStorage.setItem(ROOM_KEY, room);
 }
 
 let currentUser = getSavedName();
-let currentRoom = 'general';
+let currentRoom = getSavedRoom();
 let unsubscribe = null;
 
-function startApp(name) {
+function startApp(name, roomCode) {
   currentUser = name;
-  whoamiName.textContent = `${name} (#${currentRoom})`;
+  currentRoom = roomCode || 'general';
+
+  saveName(currentUser);
+  saveRoom(currentRoom);
+
+  whoamiName.textContent = `${currentUser} (#${currentRoom})`;
   
   joinScreen.style.display = 'none';
   appShell.style.display = 'flex';
   messageInput.focus();
 
+  // আগের কোনো রুমের রিয়েলটাইম লিসেনার থাকলে বন্ধ করা
   if (unsubscribe) unsubscribe();
 
+  // ডায়নামিক প্রাইভেট রুম পাথ: rooms/{currentRoom}/messages
   const q = query(collection(db, 'rooms', currentRoom, 'messages'), orderBy('createdAt'));
   
   unsubscribe = onSnapshot(q, (snapshot) => {
@@ -58,8 +74,9 @@ function startApp(name) {
   });
 }
 
+// পেজ লোড লজিক
 if (currentUser) {
-  startApp(currentUser);
+  startApp(currentUser, currentRoom);
 } else {
   joinScreen.style.display = 'flex';
   appShell.style.display = 'none';
@@ -76,19 +93,21 @@ function handleJoin() {
     usernameInput.focus();
     return;
   }
-  const room = window.prompt('Enter Room Code (e.g., 1234):', 'general');
-  currentRoom = room && room.trim() ? room.trim() : 'general';
-  saveName(name);
-  startApp(name);
+
+  // রুম কোড ইনপুট প্রম্পট
+  const room = window.prompt('Enter Room Code (e.g., 1234):', currentRoom);
+  const selectedRoom = room && room.trim() ? room.trim() : 'general';
+
+  startApp(name, selectedRoom);
 }
 
+// নাম বা রুম পরিবর্তন করার বাটন
 whoamiBtn.addEventListener('click', () => {
-  const newName = window.prompt('What name should we show for you?', currentUser || '');
+  const newName = window.prompt('Change your name:', currentUser || '');
   if (newName && newName.trim()) {
-    const room = window.prompt('Enter Room Code (e.g., 1234):', currentRoom);
-    currentRoom = room && room.trim() ? room.trim() : currentRoom;
-    saveName(newName.trim());
-    startApp(newName.trim());
+    const newRoom = window.prompt('Change Room Code:', currentRoom);
+    const selectedRoom = newRoom && newRoom.trim() ? newRoom.trim() : currentRoom;
+    startApp(newName.trim(), selectedRoom);
   }
 });
 
@@ -113,7 +132,7 @@ async function sendMessage() {
   } catch (error) {
     console.error('Firebase store error:', error);
     messageInput.value = text;
-    alert('Could not send message. Check your internet connection or Firebase settings.');
+    alert('Could not send message. Check your connection.');
   }
 }
 
@@ -137,7 +156,7 @@ function renderMessages(docs) {
   if (docs.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'empty-state';
-    empty.textContent = 'No messages yet. Say hi first!';
+    empty.textContent = `No messages in room #${currentRoom} yet. Say hi!`;
     chatBox.appendChild(empty);
     return;
   }
